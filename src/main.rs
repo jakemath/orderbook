@@ -3,7 +3,7 @@ Author: Jake Mathai
 Purpose: Orderbook driver program
 */
 
-mod orderbook::Orderbook;
+mod orderbook;
 
 fn main() {
     let mut book = orderbook::Orderbook::new(5);
