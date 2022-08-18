@@ -10,8 +10,8 @@ use priority_queue::PriorityQueue;
 #[derive(Debug, Clone)]
 pub struct PriceLevel {
     key: u32,
-    price: f32,
-    quantity: f32
+    pub price: f32,
+    pub quantity: f32
 }
 
 impl Hash for PriceLevel {
@@ -30,8 +30,8 @@ impl Eq for PriceLevel {}
 
 pub struct Orderbook {
     key_factor: f32,
-    bids: PriorityQueue<PriceLevel, i64>,
-    asks: PriorityQueue<PriceLevel, i64>
+    pub bids: PriorityQueue<PriceLevel, i64>,
+    pub asks: PriorityQueue<PriceLevel, i64>
 }
 
 impl Orderbook {
@@ -65,45 +65,39 @@ impl Orderbook {
 
     pub fn get_asks(&self) -> &PriorityQueue<PriceLevel, i64> { &self.asks }
 
-    fn get_best_bid(&self) -> Option<&PriceLevel> {
-        let bid_peek = self.bids.peek();
-        if bid_peek.is_none() {
-            return None;
+    pub fn get_best_bid(&self) -> Option<&PriceLevel> {
+        match self.bids.peek() {
+            None => None,
+            Some(best_bid) => Some(best_bid.0)
         }
-        Some(bid_peek.unwrap().0)
     }
 
-    fn get_best_ask(&self) -> Option<&PriceLevel> {
-        let ask_peek = self.asks.peek();
-        if ask_peek.is_none() {
-            return None;
+    pub fn get_best_ask(&self) -> Option<&PriceLevel> {
+        match self.asks.peek() {
+            None => None,
+            Some(best_ask) => Some(best_ask.0)
         }
-        Some(ask_peek.unwrap().0)
     }
 
-    fn get_mid_price(&self) -> Option<f32> {
+    pub fn get_mid_price(&self) -> Option<f32> {
         let bid_peek = self.get_best_bid();
         if bid_peek.is_none() {
             return None;
         }
-        let best_bid = bid_peek.unwrap();
         let ask_peek = self.get_best_ask();
         if ask_peek.is_none() {
             return None;
         }
-        let best_ask = ask_peek.unwrap();
-        Some((best_bid.price + best_ask.price) * 0.5)
+        Some((bid_peek.unwrap().price + ask_peek.unwrap().price) * 0.5)
     }
 
     // Side == 1 -> simulate buy by walking asks; Side == 0 -> simulate sell by walking bids
     pub fn simulate_market_order(&self, side: u8, simulation_amount: f32) -> Option<(f32, f32)> {
-        let mut book_side_clone;
-        if side == 1 {
-            book_side_clone = self.asks.clone();
-        } 
-        else {
-            book_side_clone = self.bids.clone();
-        }
+        let mut book_side_clone = if side == 1 {
+            self.asks.clone()
+        } else {
+            self.bids.clone()
+        };
         if book_side_clone.is_empty() {
             return None;
         }
@@ -130,7 +124,7 @@ impl Orderbook {
         Some((execution_price / simulation_amount, worst_price_level.unwrap()))
     }
 
-    fn get_weighted_bid(&self) -> Option<f32> {
+    pub fn get_weighted_bid(&self) -> Option<f32> {
         if self.bids.is_empty() {
             return None;
         }
@@ -144,7 +138,7 @@ impl Orderbook {
         Some(bid_sum / bid_quantity)
     }
 
-    fn get_weighted_ask(&self) -> Option<f32> {
+    pub fn get_weighted_ask(&self) -> Option<f32> {
         if self.asks.is_empty() {
             return None;
         }
