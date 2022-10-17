@@ -164,8 +164,8 @@ impl Orderbook {
             amount_remaining -= ask_quantity;
         }
         match amount_remaining {
-            0 => None,
-            _ => Some((price_numerator as f64) / (self.quantity_factor * quantity))
+            0 => Some((price_numerator as f64) / (self.quantity_factor * quantity)),
+            _ => None
         }
     }
 
@@ -183,8 +183,8 @@ impl Orderbook {
             amount_remaining -= ask_quantity;
         }
         match amount_remaining {
-            0 => None,
-            _ => Some((price_numerator as f64) / (self.quantity_factor * quantity))
+            0 => Some((price_numerator as f64) / (self.quantity_factor * quantity)),
+            _ => None
         }
     }
 }
