@@ -5,6 +5,10 @@ Purpose: L2 orderbook
 
 use std::collections::BTreeMap;
 
+/*
+Bids and asks trees map scaled price to scaled quantity.
+Methods iterate bids in descending order and asks in ascending order of price keys
+*/
 pub struct Orderbook {
     pub bids: BTreeMap<u64, u64>,
     pub asks: BTreeMap<u64, u64>,
@@ -51,6 +55,10 @@ impl Orderbook {
         }
     }
 
+    /*
+    Process orderbook update. If is_snapshot, resets the bids and asks to empty.
+    Bids and asks should be formatted as (price, quantity)
+    */
     pub fn process(&mut self, bids: Vec<(f64, f64)>, asks: Vec<(f64, f64)>, is_snapshot: bool) {
         if is_snapshot {
             self.bids.clear();
@@ -73,16 +81,14 @@ impl Orderbook {
     }
 
     pub fn get_best_bid(&self) -> Option<(u64, u64)> {
-        let peek = self.bids.iter().rev().next();
-        match peek {
+        match self.bids.iter().rev().next() {
             Some((price, quantity)) => Some((*price, *quantity)),
             None => None
         }
     }
 
     pub fn get_best_ask(&self) -> Option<(u64, u64)> {
-        let peek = self.asks.iter().next();
-        match peek {
+        match self.asks.iter().next() {
             Some((price, quantity)) => Some((*price, *quantity)),
             None => None
         }
@@ -126,6 +132,22 @@ impl Orderbook {
             total_quantity += quantity;
         }
         Some((numerator as f64) / (total_quantity as f64))
+    }
+
+    pub fn get_total_bid_quantity(&self) -> f64 {
+        let mut total_quantity: u64 = 0;
+        for (_, quantity) in self.bids.iter() {
+            total_quantity += quantity;
+        }
+        (total_quantity as f64) / self.quantity_factor
+    }
+
+    pub fn get_total_ask_quantity(&self) -> f64 {
+        let mut total_quantity: u64 = 0;
+        for (_, quantity) in self.asks.iter() {
+            total_quantity += quantity;
+        }
+        (total_quantity as f64) / self.quantity_factor
     }
 
     pub fn simulate_taker_buy(&self, quantity: f64) -> Option<f64> {
